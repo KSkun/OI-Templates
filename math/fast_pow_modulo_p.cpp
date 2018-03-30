@@ -37,11 +37,12 @@ inline LL fpow(LL n, LL k, LL p) {
 }
 
 // an example of calculationg n^k mod p
+// can pass luogu p1226
 
 LL n, k, p;
 
 int main() {
 	n = readint(); k = readint(); p = readint();
-	printf("%lld", fpow(n, k, p));
+	printf("%lld^%lld mod %lld=%lld", n, k, p, fpow(n, k, p));
 	return 0;
 }
