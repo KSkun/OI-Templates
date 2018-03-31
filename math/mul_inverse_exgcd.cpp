@@ -33,21 +33,19 @@ inline LL exgcd(LL a, LL b, LL &x, LL &y) {
 		x = 1; y = 0;
 		return a;
 	}
-	LL res = exgcd(b, a % b, x, y);
-	LL t = x; x = y; y = (t - a / b * y) % p;
+	LL res = exgcd(b, a % b, x, y), t = x; x = y; y = (t - a / b * y) % p;
 	return res;
 }
 
 // calculate modular multiplicative inverse with extended euclidean alg
-// cannot pass luogu p3811 because of O(n log n)
+// p is not necessarily a prime number
+// can pass luogu p1082
 
 int main() {
 	n = readint(); p = readint();
-	for(int i = 1; i <= n; i++) {
-		LL x, y;
-		exgcd(i, p, x, y);
-		x = (x % p + p) % p;
-		printf("%lld\n", x);
-	}
+	LL x, y;
+	exgcd(n, p, x, y);
+	x = (x % p + p) % p;
+	printf("%lld\n", x);
 	return 0;
 }
