@@ -22,17 +22,6 @@ inline LL readint() {
 	return res * neg;
 }
 
-inline LL fpow(LL n, LL k, LL p) {
-	LL res = 1;
-	while(k) {
-		if(k & 1) res = res * n % p;
-		n = n * n % p;
-		k >>= 1;
-	}
-	return res;
-}
-
-
 const int MAXN = 100005;
 
 LL T, n, m, p, mul[MAXN], inv[MAXN];
