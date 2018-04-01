@@ -51,11 +51,11 @@ inline void calfail() {
 		int u = que.front(); que.pop();
 		for(int i = 0; i < 26; i++) {
 			if(ch[u][i]) {
-                fail[ch[u][i]] = ch[fail[u]][i];
-                que.push(ch[u][i]);
-            } else {
-                ch[u][i] = ch[fail[u]][i];
-            }
+				fail[ch[u][i]] = ch[fail[u]][i];
+				que.push(ch[u][i]);
+			} else {
+				ch[u][i] = ch[fail[u]][i];
+			}
 		}
 	}
 }
