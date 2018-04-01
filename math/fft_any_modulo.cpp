@@ -81,9 +81,6 @@ inline void calwn() {
  */
 inline void fft(Complex *arr, int f) {
 	for(int i = 0; i < n; i++) {
-		rev[i] = (rev[i >> 1] >> 1) | ((i & 1) << (len - 1));
-	}
-	for(int i = 0; i < n; i++) {
 		if(i < rev[i]) std::swap(arr[i], arr[rev[i]]);
 	}
 	for(int i = 1; i < n; i <<= 1) {
