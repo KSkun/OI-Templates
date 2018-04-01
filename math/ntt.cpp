@@ -1,6 +1,5 @@
 // Code by KSkun, 2018/3
 #include <cstdio>
-#include <cmath>
 
 #include <algorithm>
 
@@ -25,28 +24,10 @@ inline LL readint() {
 	return res * neg;
 }
 
-struct Complex {
-	double real, imag;
-	Complex(double real = 0, double imag = 0): real(real), imag(imag) {}
-	inline Complex operator+(const Complex &rhs) const {
-		return Complex(real + rhs.real, imag + rhs.imag);
-	}
-	inline Complex operator-(const Complex &rhs) const {
-		return Complex(real - rhs.real, imag - rhs.imag);
-	}
-	inline Complex operator*(const Complex &rhs) const {
-		return Complex(real * rhs.real - imag * rhs.imag, real * rhs.imag + imag * rhs.real);
-	}
-	inline Complex& operator*=(const Complex &x) {
-		return *this = *this * x;
-	}
-};
-
-const int MAXN = 1 << 22;
-const double PI = std::acos(-1);
+const int MAXN = 1 << 22, G = 3, MO = 998244353;
 
 int n, m, len, rev[MAXN];
-Complex a[MAXN], b[MAXN], c[MAXN];
+LL a[MAXN], b[MAXN], c[MAXN];
 
 /*
  * Calculate the inverse of every number in binary.
@@ -59,45 +40,60 @@ inline void calrev() {
 }
 
 /*
- * Apply FFT to a complex array.
+ * Fast pow.
+ */ 
+inline LL fpow(LL n, LL k) {
+	LL res = 1;
+	while(k) {
+		if(k & 1) res = res * n % MO;
+		n = n * n % MO;
+		k >>= 1;
+	}
+	return res;
+}
+
+/*
+ * Apply NTT to a complex array.
  */
-inline void fft(Complex *arr, int f) {
+inline void ntt(LL *arr, int f) {
 	for(int i = 0; i < n; i++) {
 		if(i < rev[i]) std::swap(arr[i], arr[rev[i]]);
 	}
 	for(int i = 1; i < n; i <<= 1) {
-		Complex wn(std::cos(PI / i), f * std::sin(PI / i));
+		LL gn = fpow(G, (MO - 1) / (i << 1));
+		if(f == -1) gn = fpow(gn, MO - 2);
 		for(int j = 0; j < n; j += i << 1) {
-			Complex w(1, 0);
+			LL w = 1;
 			for(int k = 0; k < i; k++) {
-				Complex x = arr[j + k], y = w * arr[j + k + i];
-				arr[j + k] = x + y;
-				arr[j + k + i] = x - y;
-				w *= wn;
+				LL x = arr[j + k], y = w * arr[j + k + i] % MO;
+				arr[j + k] = (x + y) % MO;
+				arr[j + k + i] = ((x - y) % MO + MO) % MO;
+				w = w * gn % MO;
 			}
 		}
-	} 
+	}
 }
 
-// an example of FFT
+// an example of NTT
 // can pass luogu p3803
 
 int main() {
 	n = readint(); m = readint();
 	for(int i = 0; i <= n; i++) {
-		a[i].real = readint();
+		a[i] = readint();
 	}
 	for(int i = 0; i <= m; i++) {
-		b[i].real = readint();
+		b[i] = readint();
 	}
 	m += n;
 	for(n = 1; n <= m; n <<= 1) len++;
 	calrev();
-	fft(a, 1); fft(b, 1); // DFT
+	ntt(a, 1); ntt(b, 1); // DFT
 	for(int i = 0; i < n; i++) c[i] = a[i] * b[i];
-	fft(c, -1); // IDFT
+	ntt(c, -1); // IDFT
+	LL invn = fpow(n, MO - 2);
 	for(int i = 0; i <= m; i++) {
-		printf("%d ", int(c[i].real / n + 0.5));
+		printf("%d ", c[i] * invn % MO);
 	}
 	return 0;
 }

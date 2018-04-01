@@ -40,13 +40,20 @@ struct Complex {
 	inline Complex& operator*=(const Complex &x) {
 		return *this = *this * x;
 	}
+	inline Complex operator/(const double &rhs) const {
+		return Complex(real / rhs, imag / rhs);
+	}
+	inline Complex& operator/=(const double &x) {
+		return *this = *this / x;
+	}
 };
 
-const int MAXN = 1 << 22;
+const int MAXN = 1 << 20;
 const double PI = std::acos(-1);
 
-int n, m, len, rev[MAXN];
-Complex a[MAXN], b[MAXN], c[MAXN];
+int n, m, MO, len, rev[MAXN];
+LL x[MAXN], y[MAXN], z[MAXN];
+Complex a[MAXN], b[MAXN], c[MAXN], d[MAXN], e[MAXN], f[MAXN], g[MAXN], h[MAXN], wn[MAXN];
 
 /*
  * Calculate the inverse of every number in binary.
@@ -59,45 +66,72 @@ inline void calrev() {
 }
 
 /*
+ * Calculate the root of unity.
+ */
+inline void calwn() {
+	for(int i = 1; i < n; i <<= 1) {
+		for(int j = 0; j < i; j++) {
+			wn[n / i * j] = Complex(std::cos(PI / i * j), std::sin(PI / i * j));
+		}
+	}
+}
+
+/*
  * Apply FFT to a complex array.
  */
 inline void fft(Complex *arr, int f) {
 	for(int i = 0; i < n; i++) {
+		rev[i] = (rev[i >> 1] >> 1) | ((i & 1) << (len - 1));
+	}
+	for(int i = 0; i < n; i++) {
 		if(i < rev[i]) std::swap(arr[i], arr[rev[i]]);
 	}
 	for(int i = 1; i < n; i <<= 1) {
-		Complex wn(std::cos(PI / i), f * std::sin(PI / i));
 		for(int j = 0; j < n; j += i << 1) {
-			Complex w(1, 0);
 			for(int k = 0; k < i; k++) {
-				Complex x = arr[j + k], y = w * arr[j + k + i];
+				Complex w = Complex(wn[n / i * k].real, f * wn[n / i * k].imag), 
+					x = arr[j + k], y = w * arr[j + k + i];
 				arr[j + k] = x + y;
 				arr[j + k + i] = x - y;
-				w *= wn;
 			}
 		}
 	} 
+	if(f == -1) {
+		for(int i = 0; i < n; i++) arr[i] /= n;
+	}
 }
 
-// an example of FFT
-// can pass luogu p3803
+// an example of FFT on any modulo numbers
+// can pass luogu p4245
 
 int main() {
-	n = readint(); m = readint();
+	n = readint(); m = readint(); MO = readint();
 	for(int i = 0; i <= n; i++) {
-		a[i].real = readint();
+		x[i] = readint() % MO;
 	}
 	for(int i = 0; i <= m; i++) {
-		b[i].real = readint();
+		y[i] = readint() % MO;
 	}
 	m += n;
 	for(n = 1; n <= m; n <<= 1) len++;
-	calrev();
-	fft(a, 1); fft(b, 1); // DFT
-	for(int i = 0; i < n; i++) c[i] = a[i] * b[i];
-	fft(c, -1); // IDFT
+	calrev(); calwn();
+	// split a number into x * 32768 + y
+	for(int i = 0; i < n; i++) {
+		a[i].real = x[i] >> 15; b[i].real = x[i] & 0x7fff;
+		c[i].real = y[i] >> 15; d[i].real = y[i] & 0x7fff;
+	}
+	fft(a, 1); fft(b, 1); fft(c, 1); fft(d, 1); // DFT
+	for(int i = 0; i < n; i++) {
+		e[i] = a[i] * c[i]; f[i] = b[i] * c[i];
+		g[i] = a[i] * d[i]; h[i] = b[i] * d[i];
+	}
+	fft(e, -1); fft(f, -1); fft(g, -1); fft(h, -1); // IDFT
+	for(int i = 0; i < n; i++) {
+		z[i] = (((((LL(llroundl(e[i].real)) % MO) << 30) % MO + ((LL(llroundl(f[i].real)) % MO) << 15) % MO) % MO +
+			((LL(llroundl(g[i].real)) % MO) << 15) % MO) + LL(llroundl(h[i].real)) % MO) % MO;
+	}
 	for(int i = 0; i <= m; i++) {
-		printf("%d ", int(c[i].real / n + 0.5));
+		printf("%lld ", z[i]);
 	}
 	return 0;
 }
