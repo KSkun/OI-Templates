@@ -39,7 +39,7 @@ std::vector<Edge> gra[MAXN];
  * Find the center of gravity of a tree.
  */  
 inline void findrt(int u, int f, int tot) {
-	siz[u] = 1;
+	siz[u] = 1; msz[u] = 0; 
 	for(Edge e : gra[u]) {
 		int v = e.to;
 		if(v == f || vis[v]) continue;
