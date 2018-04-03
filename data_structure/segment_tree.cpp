@@ -1,9 +1,5 @@
 // Code by KSkun, 2018/4
 #include <cstdio>
-#include <cstring>
-
-#include <algorithm>
-#include <map>
 
 typedef long long LL;
 
