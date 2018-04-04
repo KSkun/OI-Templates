@@ -51,10 +51,14 @@ inline int merge(int u, int v) {
 	return u;
 }
 
+inline bool isleft(int p) {
+	return tr[tr[p].fa].ch[0] == p;
+}
+
 // Erase a node from the heap
 inline void erase(int p) {
 	int q = merge(tr[p].ch[0], tr[p].ch[1]);
-	tr[q].fa = tr[p].fa;
+	tr[q].fa = tr[p].fa; tr[tr[p].fa].ch[!isleft(p)] = q;
 	memset(tr + p, 0, sizeof(Node));
 	tr[p].val = -1;
 	for(int i = tr[q].fa; i; i = tr[i].fa) {
