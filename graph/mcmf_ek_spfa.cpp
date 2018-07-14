@@ -40,34 +40,39 @@ inline void addedge(int u, int v, int cap, int cost) {
 
 std::queue<int> que;
 
-int flow, cost, f[MAXN], dis[MAXN], pre[MAXN], pree[MAXN];
+int dis[MAXN], f[MAXN], pre[MAXN], pree[MAXN];
+std::queue<int> que;
 bool inque[MAXN];
 
-// Calculate the MCMF of the network 
-inline void mcmf(int s, int t) {
-	for(;;) {
-		memset(f, 0, sizeof(f));
-		memset(dis, 0x3f, sizeof(dis));
-		dis[s] = 0; inque[s] = true; f[s] = INF; que.push(s);
-		while(!que.empty()) {
-			int u = que.front(); que.pop(); inque[u] = false;
-			for(int i = head[u]; ~i; i = gra[i].nxt) {
-				int v = gra[i].to;
-				if(gra[i].cap > 0 && dis[v] > dis[u] + gra[i].cost) {
-					pre[v] = u; pree[v] = i;
-					f[v] = std::min(f[u], gra[i].cap);
-					dis[v] = dis[u] + gra[i].cost;
-					if(!inque[v]) {
-						que.push(v); inque[v] = true;
-					}
+inline bool spfa(int s, int t) {
+	memset(dis, 0x3f, sizeof(dis));
+	memset(f, 0, sizeof(f));
+	dis[s] = 0; f[s] = INF; inque[s] = true; que.push(s);
+	while(!que.empty()) {
+		int u = que.front(); que.pop(); inque[u] = false;
+		for(int i = head[u]; ~i; i = gra[i].nxt) {
+			int v = gra[i].to;
+			if(gra[i].cap && dis[v] > dis[u] + gra[i].cost) {
+				dis[v] = dis[u] + gra[i].cost;
+				f[v] = std::min(f[u], gra[i].cap);
+				pre[v] = u; pree[v] = i;
+				if(!inque[v]) {
+					que.push(v); inque[v] = true;
 				}
 			}
 		}
-		if(!f[t]) break;
+	}
+	return f[t];
+}
+
+int flow, cost;
+
+inline void mcmf(int s, int t) {
+	while(spfa(s, t)) {
+		flow += f[t]; cost += f[t] * dis[t];
 		for(int i = t; i != s; i = pre[i]) {
 			gra[pree[i]].cap -= f[t]; gra[pree[i] ^ 1].cap += f[t];
 		}
-		flow += f[t]; cost += f[t] * dis[t];
 	}
 }
 

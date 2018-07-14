@@ -38,21 +38,19 @@ inline void addedge(int u, int v, int cap) {
 	gra[tot] = Edge {u, 0, head[v]}; head[v] = tot++;
 }
 
-std::queue<int> que;
 int level[MAXN];
-bool vis[MAXN];
 
-// BFS proccess layered graph 
 inline bool bfs(int s, int t) {
+	std::queue<int> que;
 	memset(level, -1, sizeof(level));
-	level[s] = 0;
-	que.push(s);
+	level[s] = 0; que.push(s);
 	while(!que.empty()) {
 		int u = que.front(); que.pop();
 		for(int i = head[u]; ~i; i = gra[i].nxt) {
 			int v = gra[i].to;
-			if(level[v] == -1 && gra[i].cap > 0) {
+			if(level[v] == -1 && gra[i].cap) {
 				level[v] = level[u] + 1;
+				if(v == t) return true;
 				que.push(v);
 			}
 		}
@@ -60,37 +58,30 @@ inline bool bfs(int s, int t) {
 	return level[t] != -1;
 }
 
-// DFS find augumenting paths
+int cur[MAXN];
+
 inline int dfs(int u, int t, int left) {
-	if(u == t || left == 0) return left;
+	if(u == t || !left) return left;
 	int flow = 0;
-	vis[u] = true;
-	for(int i = head[u]; ~i; i = gra[i].nxt) {
+	for(int &i = cur[u]; ~i; i = gra[i].nxt) {
 		int v = gra[i].to;
-		if(!vis[v] && gra[i].cap > 0 && level[v] == level[u] + 1) {
-			int d = dfs(v, t, std::min(left, gra[i].cap));
-			if(d > 0) {
-				gra[i].cap -= d; gra[i ^ 1].cap += d;
-				left -= d; flow += d;
-				if(left == 0) {
-					level[u] = -1;
-					return flow;
-				}
+		if(level[v] == level[u] + 1 && gra[i].cap) {
+			int f = dfs(v, t, std::min(left, gra[i].cap));
+			if(f) {
+				flow += f; left -= f; gra[i].cap -= f; gra[i ^ 1].cap += f;
+				if(!left) return flow;
 			}
 		}
 	}
 	return flow;
 }
 
-// Keep augumenting until not path exists
 inline int dinic(int s, int t) {
 	int flow = 0;
 	while(bfs(s, t)) {
-		memset(vis, 0, sizeof(vis));
+		memcpy(cur, head, sizeof(head));
 		int f;
-		while(f = dfs(s, t, INF)) {
-			flow += f;
-		}
+		while(f = dfs(s, t, INF)) flow += f;
 	}
 	return flow;
 }
