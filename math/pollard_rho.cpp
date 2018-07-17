@@ -61,9 +61,9 @@ inline bool miller_rabin(LL x) {
 }
 
 inline LL pollard_rho(LL x, LL k) {
-	LL a = randint(x - 1), b = 1, t1 = 1, t2 = 1;
+	LL a = randint(x - 1), b = a, t1 = 1, t2 = 2;
 	for(;;) {
-		t1++; b = (a * a % x + k) % x; 
+		t1++; a = (a * a % x + k) % x; 
 		LL g = gcd(abs(b - a), x);
 		if(g > 1 && g < x) return g;
 		if(a == b) break;
